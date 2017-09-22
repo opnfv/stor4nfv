@@ -1,0 +1,21 @@
+###########
+# GENERAL #
+###########
+
+
+remote_url: https://github.com/spdk/spdk.git
+
+user_dir: /home/wewe
+
+ceph_dir: /home/wewe/ceph
+
+# when SPDK is installed independently， set enabled_install: spdk_alone
+# if not, set enabled_install: ceph_spdk
+enabled_install: spdk_alone
+
+# when enabled_install == "spdk_alone",set spdk_dir: /home/<your_user_name>/spdk.
+# when enabled_install == "ceph_spdk",set spdk_dir: /home/<your_uesr_name>/ceph/src/spdk
+spdk_dir: /home/wewe/spdk
+
+#system_version include: Ubuntu, Debian, entos, Fedora, FreeBSD
+system_version: Ubuntu
