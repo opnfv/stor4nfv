@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9a3d3df0_1e452570",
+        "filename": "LICENSE",
+        "patchSetId": 1
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 7013
+      },
+      "writtenOn": "2017-10-19T03:19:53Z",
+      "side": 1,
+      "message": "it should be \u00272017\u0027, right?",
+      "range": {
+        "startLine": 1,
+        "startChar": 9,
+        "endLine": 1,
+        "endChar": 15
+      },
+      "revId": "9f0a20293c12279d09372c50939f56da8bdfdf4b",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    }
+  ]
+}
