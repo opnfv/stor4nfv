@@ -6,7 +6,7 @@ Primary Contact: Shane Wang, Intel
 Project Lead: Shane Wang, Intel
 Jira Project Name: Storage For NFV
 Jira Project Prefix: [STOR4NFV]
-mailing list tag [Should match Jira Project Prefix] 
+mailing list tag [Should match Jira Project Prefix]
 Repository: stor4nfv
 
 Committers:
@@ -17,10 +17,10 @@ Xiaoyan Li (xiaoyan.li@intel.com)
 Yuan Liu (liuyuan@cmss.chinamobile.com)
 Qiaowei Ren (qiaowei.ren@intel.com)
 Haomai Wang (haomai@xsky.com)
-Leon Wang (wanghui71@huawei.com) 
+Leon Wang (wanghui71@huawei.com)
 Holloway He (heluwei@huawei.com)
 Kexue Luo (luo.kexue@zte.com.cn)
 Xingguo Xie (xingguo.xie@zte.com.cn)
 
 Link to TSC approval: http://meetbot.opnfv.org/meetings/opnfv-meeting/2017/opnfv-meeting.2017-08-29-12.58.html
-Link to approval of additional submitters: 
+Link to approval of additional submitters:
