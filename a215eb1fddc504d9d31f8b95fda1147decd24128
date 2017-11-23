@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9a3d3df0_3cd43646",
+        "filename": "spdk/install/pkgdep.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 7065
+      },
+      "writtenOn": "2017-11-23T01:44:18Z",
+      "side": 1,
+      "message": "-1. I noticed that there is pkgdep.sh file in spdk https://github.com/spdk/spdk/blob/master/scripts/pkgdep.sh, why don\u0027t we just use the file in spdk? As when pkgdep.sh in spdk changes, this file also needs to change.",
+      "revId": "a215eb1fddc504d9d31f8b95fda1147decd24128",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a3d3df0_dcc42a94",
+        "filename": "spdk/install/spdk_deploy.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 7065
+      },
+      "writtenOn": "2017-11-23T01:44:18Z",
+      "side": 1,
+      "message": "Here is \"make\" enough? Do you need to \"make install\"? or else you have to set LD_PATH_LIBRARY if to use SPDK.",
+      "revId": "a215eb1fddc504d9d31f8b95fda1147decd24128",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a3d3df0_9ccbc2a4",
+        "filename": "spdk/test/unittest.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 44,
+      "author": {
+        "id": 7065
+      },
+      "writtenOn": "2017-11-23T01:44:18Z",
+      "side": 1,
+      "message": "Seems there tests are from SPDK? \nDo you choose parts of tests in SPDK or all tests in SPDK? \nIf not all, what criteria do you use?",
+      "revId": "a215eb1fddc504d9d31f8b95fda1147decd24128",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    }
+  ]
+}
