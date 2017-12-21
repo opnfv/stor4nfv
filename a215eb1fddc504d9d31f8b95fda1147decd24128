@@ -37,6 +37,41 @@
     },
     {
       "key": {
+        "uuid": "9a3d3df0_07ec4c29",
+        "filename": "spdk/install/pkgdep.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 7065
+      },
+      "writtenOn": "2017-12-21T07:58:00Z",
+      "side": 1,
+      "message": "I still don\u0027t get why we add the file here. I am wondering whether we can install dependencies in spdk_deploy.sh after cloning spdk source.",
+      "parentUuid": "9a3d3df0_39d9d183",
+      "revId": "a215eb1fddc504d9d31f8b95fda1147decd24128",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a3d3df0_a78be066",
+        "filename": "spdk/install/spdk_deploy.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 7065
+      },
+      "writtenOn": "2017-12-21T07:58:00Z",
+      "side": 1,
+      "message": "I am wondering why you can\u0027t run pkgdep.sh here.",
+      "revId": "a215eb1fddc504d9d31f8b95fda1147decd24128",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9a3d3df0_dcc42a94",
         "filename": "spdk/install/spdk_deploy.sh",
         "patchSetId": 2
