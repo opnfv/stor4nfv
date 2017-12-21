@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "9a3d3df0_39d9d183",
+        "filename": "spdk/install/pkgdep.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 6925
+      },
+      "writtenOn": "2017-12-21T02:07:27Z",
+      "side": 1,
+      "message": "You\u0027re also right. It\u0027s ok to use it in SPDK, but I think it\u0027s more flexible to use in stor4nfv. The purpose of this file is to install a dependency package for the SPDK, which is compatible with the current mainstream systems (centos, ubuntu), which I don\u0027t think will be much changed.",
+      "parentUuid": "9a3d3df0_3cd43646",
+      "revId": "a215eb1fddc504d9d31f8b95fda1147decd24128",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9a3d3df0_dcc42a94",
         "filename": "spdk/install/spdk_deploy.sh",
         "patchSetId": 2
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "9a3d3df0_79e35933",
+        "filename": "spdk/install/spdk_deploy.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 6925
+      },
+      "writtenOn": "2017-12-21T02:07:27Z",
+      "side": 1,
+      "message": "\"make\" is enough.",
+      "parentUuid": "9a3d3df0_dcc42a94",
+      "revId": "a215eb1fddc504d9d31f8b95fda1147decd24128",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9a3d3df0_9ccbc2a4",
         "filename": "spdk/test/unittest.sh",
         "patchSetId": 2
@@ -47,6 +83,24 @@
       "writtenOn": "2017-11-23T01:44:18Z",
       "side": 1,
       "message": "Seems there tests are from SPDK? \nDo you choose parts of tests in SPDK or all tests in SPDK? \nIf not all, what criteria do you use?",
+      "revId": "a215eb1fddc504d9d31f8b95fda1147decd24128",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a3d3df0_19cccdbb",
+        "filename": "spdk/test/unittest.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 44,
+      "author": {
+        "id": 6925
+      },
+      "writtenOn": "2017-12-21T02:07:27Z",
+      "side": 1,
+      "message": "These are just unit test cases who are part of the test suite.\nMy thought is to put an existing test case in and add the specific test case based on the Stor4NFV scenario.",
+      "parentUuid": "9a3d3df0_9ccbc2a4",
       "revId": "a215eb1fddc504d9d31f8b95fda1147decd24128",
       "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
       "unresolved": false
