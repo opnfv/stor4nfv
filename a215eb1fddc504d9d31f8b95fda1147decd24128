@@ -72,6 +72,24 @@
     },
     {
       "key": {
+        "uuid": "9a3d3df0_5b710975",
+        "filename": "spdk/install/spdk_deploy.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 6925
+      },
+      "writtenOn": "2017-12-23T06:10:59Z",
+      "side": 1,
+      "message": "I have modified the installation of SPDK by using the ansible tool to deploy spdk. It indicates that the correct installation of SPDK, however, how to use the library of SPDK,   I think that ceph need to set the link to the SPDK lib when installed.",
+      "parentUuid": "9a3d3df0_a78be066",
+      "revId": "a215eb1fddc504d9d31f8b95fda1147decd24128",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9a3d3df0_dcc42a94",
         "filename": "spdk/install/spdk_deploy.sh",
         "patchSetId": 2
