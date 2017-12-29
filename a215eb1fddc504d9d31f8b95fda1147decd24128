@@ -55,6 +55,24 @@
     },
     {
       "key": {
+        "uuid": "9a3d3df0_430d9f36",
+        "filename": "spdk/install/pkgdep.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 6925
+      },
+      "writtenOn": "2017-12-29T09:46:10Z",
+      "side": 1,
+      "message": "Hi, Lisa. I haved fixed a bug that  the script file was not executable by ansible. Thank you for your kind advice. And I put it after \"git clone spdk\".",
+      "parentUuid": "9a3d3df0_39d9d183",
+      "revId": "a215eb1fddc504d9d31f8b95fda1147decd24128",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9a3d3df0_a78be066",
         "filename": "spdk/install/spdk_deploy.sh",
         "patchSetId": 2
