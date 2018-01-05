@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9a3d3df0_54842e5d",
+        "filename": "spdk-ansible/tasks/install.yml",
+        "patchSetId": 7
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 7065
+      },
+      "writtenOn": "2018-01-05T05:12:06Z",
+      "side": 1,
+      "message": "If installed with Ceph, Ceph includes spdk source code. Why needs to clone it here?",
+      "range": {
+        "startLine": 8,
+        "startChar": 0,
+        "endLine": 12,
+        "endChar": 38
+      },
+      "revId": "f3414b31ff1cef2f4a9b0b1783b41c01a4c5f1bb",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    }
+  ]
+}
