@@ -1,0 +1,11 @@
+---
+
+- name: install spdk
+  become: True
+  hosts: all
+  gather_facts: False
+  vars_files:
+    - group_vars/common.yml
+  tasks:
+    - include_tasks: tasks/install.yml
+
