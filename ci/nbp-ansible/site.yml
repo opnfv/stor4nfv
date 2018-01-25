@@ -1,0 +1,13 @@
+---
+# Defines deployment design and assigns role to server groups
+
+- name: deploy opensds flexvolume plugin in all kubelet nodes
+  hosts: worker-nodes
+  remote_user: root
+  vars_files:
+    - group_vars/common.yml
+  gather_facts: false
+  become: True
+  roles:
+    - common
+    - flexvolume
