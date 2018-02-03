@@ -1,4 +1,5 @@
 ## Prerequisite ##
+
 ### ubuntu
 * Version information
 
@@ -6,6 +7,7 @@
 	root@proxy:~# cat /etc/issue
 	Ubuntu 16.04.2 LTS \n \l
 	```
+
 ### docker
 * Version information
 
@@ -55,14 +57,14 @@
 
 * Create service account, role and bind them.
 	```
-	cd /opt/opensds-k8s-linux-amd64/provisioner
+	cd /opt/opensds-k8s-{release version}-linux-amd64/provisioner
 	kubectl create -f serviceaccount.yaml
 	kubectl create -f clusterrole.yaml
 	kubectl create -f clusterrolebinding.yaml
 	```
 
 * Change the opensds endpoint IP in pod-provisioner.yaml
-The IP (192.168.56.106) should be replaced with the OpenSDS osdslet actual endpoint IP.
+The IP ```192.168.56.106``` should be replaced with the OpenSDS osdslet actual endpoint IP.
     ```yaml
     kind: Pod
     apiVersion: v1
@@ -72,7 +74,7 @@ The IP (192.168.56.106) should be replaced with the OpenSDS osdslet actual endpo
       serviceAccount: opensds-provisioner
       containers:
         - name: opensds-provisioner
-          image: opensdsio/opensds-provisioner
+          image: opensdsio/opensds-provisioner:latest
           securityContext:
           args:
             - "-endpoint=http://192.168.56.106:50040" # should be replaced

@@ -5,6 +5,7 @@
     state: absent
     force: yes
   ignore_errors: yes
+  when: nbp_plugin_type == "flexvolume"
 
 - name: clean nbp release files
   file:

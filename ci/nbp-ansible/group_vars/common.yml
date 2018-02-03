@@ -15,9 +15,19 @@ dummy:
 # GENERAL #
 ###########
 
-# These fields are not suggested to be modified
-nbp_download_url: https://github.com/opensds/nbp/releases/download/v0.1.0/opensds-k8s-linux-amd64.tar.gz
-nbp_tarball_url: /opt/opensds-k8s-linux-amd64.tar.gz
-nbp_dir: /opt/opensds-k8s-linux-amd64
+nbp_release: v0.1.0
+
+# These fields are not suggested to be modified 
+nbp_download_url: https://github.com/opensds/nbp/releases/download/{{ nbp_release }}/opensds-k8s-{{ nbp_release }}-linux-amd64.tar.gz
+nbp_tarball_url: /opt/opensds-k8s-{{ nbp_release }}-linux-amd64.tar.gz
+nbp_dir: /opt/opensds-k8s-{{ nbp_release }}-linux-amd64
+
+
+###########
+# PLUGIN  #
+###########
+
+nbp_plugin_type: flexvolume # flexvolume is the default integration way, but you can change it from 'csi', 'flexvolume'
 
 flexvolume_plugin_dir: /usr/libexec/kubernetes/kubelet-plugins/volume/exec/opensds.io~opensds
+

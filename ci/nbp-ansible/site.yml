@@ -10,4 +10,4 @@
   become: True
   roles:
     - common
-    - flexvolume
+    - installer
