@@ -44,9 +44,11 @@ cd opensds/contrib/ansible
 
 ### Configure opensds cluster variables:
 ##### System environment:
-Configure the ```workplace``` in `group_vars/common.yml`:
+Configure the `workplace` and `container_enabled` in `group_vars/common.yml`:
 ```yaml
 workplace: /home/your_username # Change this field according to your username. If login as root, configure this parameter to '/root'
+
+container_enabled: <false_or_true>
 ```
 
 ##### LVM
