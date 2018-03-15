@@ -1,5 +1,4 @@
 ---
-
 - name: install python-pip
   apt:
     name: python-pip

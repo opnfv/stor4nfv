@@ -8,20 +8,13 @@
     src: ../../../group_vars/lvm/lvm.yaml
     dest: "{{ lvm_config_path }}"
 
-- name: check if physical volume existed
-  shell: pvdisplay {{ pv_device }}
-  ignore_errors: yes
-  register: pv_existed
-
-- name: create a physical volume
-  shell: pvcreate {{ pv_device }}
-  when: pv_existed is undefined or pv_existed.rc != 0
-
 - name: check if volume group existed
   shell: vgdisplay {{ vg_name }}
   ignore_errors: yes
   register: vg_existed
 
-- name: create a volume group
-  shell: vgcreate {{ vg_name }} {{ pv_device }}
+- name: create a volume group and initialize it
+  lvg:
+    vg: "{{ vg_name }}"
+    pvs: "{{ pv_devices }}"
   when: vg_existed is undefined or vg_existed.rc != 0
