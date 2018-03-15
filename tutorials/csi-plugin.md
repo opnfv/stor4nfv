@@ -31,19 +31,20 @@
 	```
 
 ### [kubernetes](https://github.com/kubernetes/kubernetes) local cluster
-* You can startup the lastest k8s local cluster by executing commands blow:
+* You can startup the v1.9.0 k8s local cluster by executing commands blow:
 
 	```
 	cd $HOME
 	git clone https://github.com/kubernetes/kubernetes.git
 	cd $HOME/kubernetes
+	git checkout v1.9.0
 	make
 	echo alias kubectl='$HOME/kubernetes/cluster/kubectl.sh' >> /etc/profile
 	ALLOW_PRIVILEGED=true FEATURE_GATES=CSIPersistentVolume=true,MountPropagation=true RUNTIME_CONFIG="storage.k8s.io/v1alpha1=true" LOG_LEVEL=5 hack/local-up-cluster.sh
 	```
 
 ### [opensds](https://github.com/opensds/opensds) local cluster
-* For testing purposes you can deploy OpenSDS referring the [OpenSDS Cluster Installation through Ansible](https://github.com/opensds/opensds/wiki/OpenSDS-Cluster-Installation-through-Ansible) wiki. Besides, you need to deploy opensds csi plugin refering to ```nbp-ansible/README.md```.
+* For testing purposes you can deploy OpenSDS refering to ```ansible/README.md```.
 
 ## Testing steps ##
 

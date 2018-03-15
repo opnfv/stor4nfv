@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Copyright (c) 2018 Huawei Technologies Co., Ltd. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,23 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
----
-# Dummy variable to avoid error because ansible does not recognize the
-# file as a good configuration file when no variable in it.
-dummy:
+sudo add-apt-repository ppa:ansible/ansible # This step is needed to upgrade ansible to version 2.4.2 which is required for the ceph backend.
 
+sudo apt-get update
+sudo apt-get install -y ansible
+sleep 3
 
-###########
-# GENERAL #
-###########
-
-# These fields are NOT suggested to be modified
-controller_endpoint: 0.0.0.0:50040
-controller_log_file: "{{ opensds_log_dir }}/osdslet.log"
-
-
-###########
-# DOCKER  #
-###########
-
-controller_docker_image: opensdsio/opensds-controller:latest
+ansible --version # Ansible version 2.4.2 or higher is required for ceph; 2.0.0.2 or higher is needed for other backends.

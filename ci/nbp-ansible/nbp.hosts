@@ -1,2 +1,0 @@
-[worker-nodes]
-localhost ansible_connection=local

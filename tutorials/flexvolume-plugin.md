@@ -51,7 +51,7 @@
 
 
 ### [opensds](https://github.com/opensds/opensds) local cluster
-* For testing purposes you can deploy OpenSDS local cluster referring to ```ansible/README.md```. Besides, you need to deploy opensds flexvolume plugin refering to ```nbp-ansible/README.md```.
+* For testing purposes you can deploy OpenSDS local cluster referring to ```ansible/README.md```.
 
 ## Testing steps ##
 

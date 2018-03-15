@@ -13,22 +13,10 @@
 # limitations under the License.
 
 ---
-# Dummy variable to avoid error because ansible does not recognize the
-# file as a good configuration file when no variable in it.
-dummy:
+- name: include scenarios/flexvolume.yml
+  include: scenarios/flexvolume.yml
+  when: nbp_plugin_type == "flexvolume"
 
-
-###########
-# GENERAL #
-###########
-
-# These fields are NOT suggested to be modified
-controller_endpoint: 0.0.0.0:50040
-controller_log_file: "{{ opensds_log_dir }}/osdslet.log"
-
-
-###########
-# DOCKER  #
-###########
-
-controller_docker_image: opensdsio/opensds-controller:latest
+- name: include scenarios/csi.yml
+  include: scenarios/csi.yml
+  when: nbp_plugin_type == "csi"

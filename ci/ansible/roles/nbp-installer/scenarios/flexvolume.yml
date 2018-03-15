@@ -13,22 +13,13 @@
 # limitations under the License.
 
 ---
-# Dummy variable to avoid error because ansible does not recognize the
-# file as a good configuration file when no variable in it.
-dummy:
+- name: Create flexvolume plugin directory if not existed
+  file:
+    path: "{{ flexvolume_plugin_dir }}"
+    state: directory
+    mode: 0755
 
-
-###########
-# GENERAL #
-###########
-
-# These fields are NOT suggested to be modified
-controller_endpoint: 0.0.0.0:50040
-controller_log_file: "{{ opensds_log_dir }}/osdslet.log"
-
-
-###########
-# DOCKER  #
-###########
-
-controller_docker_image: opensdsio/opensds-controller:latest
+- name: Copy opensds flexvolume plugin binary file into flexvolume plugin dir
+  copy:
+    src: "{{ nbp_dir }}/flexvolume/opensds"
+    dest: "{{ flexvolume_plugin_dir }}/opensds"
