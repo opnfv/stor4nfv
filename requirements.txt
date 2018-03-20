@@ -3,4 +3,5 @@
 # process, which may cause wedges in the gate later.
 opnfv # Apache-2.0
 functest # Apache-2.0
+functest-kubernetes # Apache-2.0
 xtesting # Apache-2.0
