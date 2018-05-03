@@ -1,0 +1,96 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a3f45e8_28a5b9a1",
+        "filename": "docs/release/scenarios/k8-nosdn-stor4nfv-ha/scenario.description.rst",
+        "patchSetId": 1
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 6629
+      },
+      "writtenOn": "2018-05-03T08:39:30Z",
+      "side": 1,
+      "message": "s/project/projects",
+      "range": {
+        "startLine": 17,
+        "startChar": 89,
+        "endLine": 17,
+        "endChar": 96
+      },
+      "revId": "84f0222cf89f40689adac9e0c723195d7bd90016",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a3f45e8_c8b375e7",
+        "filename": "docs/release/scenarios/k8-nosdn-stor4nfv-ha/scenario.description.rst",
+        "patchSetId": 1
+      },
+      "lineNbr": 31,
+      "author": {
+        "id": 6629
+      },
+      "writtenOn": "2018-05-03T08:39:30Z",
+      "side": 1,
+      "message": "Ceph monitor node",
+      "range": {
+        "startLine": 31,
+        "startChar": 31,
+        "endLine": 31,
+        "endChar": 47
+      },
+      "revId": "84f0222cf89f40689adac9e0c723195d7bd90016",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a3f45e8_68c22135",
+        "filename": "docs/release/scenarios/k8-nosdn-stor4nfv-ha/scenario.description.rst",
+        "patchSetId": 1
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 6629
+      },
+      "writtenOn": "2018-05-03T08:39:30Z",
+      "side": 1,
+      "message": "storage resources",
+      "range": {
+        "startLine": 32,
+        "startChar": 59,
+        "endLine": 32,
+        "endChar": 63
+      },
+      "revId": "84f0222cf89f40689adac9e0c723195d7bd90016",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a3f45e8_e8e591dc",
+        "filename": "docs/release/scenarios/k8-nosdn-stor4nfv-ha/scenario.description.rst",
+        "patchSetId": 1
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 6629
+      },
+      "writtenOn": "2018-05-03T08:39:30Z",
+      "side": 1,
+      "message": "s/kubnetes/kubernetes",
+      "range": {
+        "startLine": 40,
+        "startChar": 57,
+        "endLine": 40,
+        "endChar": 65
+      },
+      "revId": "84f0222cf89f40689adac9e0c723195d7bd90016",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    }
+  ]
+}
