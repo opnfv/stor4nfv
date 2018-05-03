@@ -1,0 +1,8 @@
+Verified+1: jenkins-ci <jenkins-opnfv-ci@opnfv.org>
+Code-Review+1: Aric Gardner <agardner@linuxfoundation.org>
+Code-Review+2: Hui Wang <wanghui71@huawei.com>
+Submitted-by: Hui Wang <wanghui71@huawei.com>
+Submitted-at: Thu, 03 May 2018 01:31:11 +0000
+Reviewed-on: https://gerrit.opnfv.org/gerrit/56919
+Project: stor4nfv
+Branch: refs/heads/stable/fraser
