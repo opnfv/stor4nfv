@@ -1,0 +1,7 @@
+Code-Review+2: Qiaowei Ren <qiaowei.ren@intel.com>
+Verified+1: jenkins-ci <jenkins-opnfv-ci@opnfv.org>
+Submitted-by: Qiaowei Ren <qiaowei.ren@intel.com>
+Submitted-at: Mon, 07 May 2018 01:17:46 +0000
+Reviewed-on: https://gerrit.opnfv.org/gerrit/57099
+Project: stor4nfv
+Branch: refs/heads/stable/fraser
