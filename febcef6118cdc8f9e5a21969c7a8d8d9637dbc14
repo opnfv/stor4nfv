@@ -1,0 +1,8 @@
+Verified+1: jenkins-ci <jenkins-opnfv-ci@opnfv.org>
+Code-Review+1: luwei he <heluwei@huawei.com>
+Code-Review+2: Hui Wang <wanghui71@huawei.com>
+Submitted-by: Qiaowei Ren <qiaowei.ren@intel.com>
+Submitted-at: Mon, 07 May 2018 00:49:59 +0000
+Reviewed-on: https://gerrit.opnfv.org/gerrit/57043
+Project: stor4nfv
+Branch: refs/heads/master
