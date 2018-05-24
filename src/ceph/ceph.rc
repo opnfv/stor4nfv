@@ -1,0 +1,13 @@
+PROJECT="ceph"
+SUMMARY="a scalable distributed storage system"
+BRANCH="mimic"
+REPO="https://github.com/ceph/ceph.git"
+OPTION=""
+
+# array including all local patches, e.g.
+#
+# SOURCES=(
+#          "0001-crypto-add-openssl-support-for-RGW-encryption.patch" \
+#          "0001-add-QAT-support.patch" \
+#         )
+SOURCES=()
