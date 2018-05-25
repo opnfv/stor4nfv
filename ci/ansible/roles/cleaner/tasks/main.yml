@@ -28,7 +28,7 @@
 
 - name: kill etcd containerized service
   docker:
-    image: quay.io/coreos/etcd:latest
+    image: {{ etcd_docker_image }}
     state: stopped
   when: db_driver == "etcd" and container_enabled == true
 
