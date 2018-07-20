@@ -1,21 +1,42 @@
+# Copyright (c) 2018 Huawei Technologies Co., Ltd. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 ---
-- name: install python-pip
+- name: install python-pip, lvm2, thin-provisioning-tools and docker-compose
   apt:
-    name: python-pip
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - python-pip
+    - lvm2
+    - thin-provisioning-tools
+    - docker-compose
 
-- name: install lvm2
-  apt:
-    name: lvm2
+- name: configure cinder section in opensds global info if specify cinder backend
+  shell: |
+    cat >> opensds.conf <<OPENSDS_GLOABL_CONFIG_DOC
 
-- name: install thin-provisioning-tools
-  apt:
-    name: thin-provisioning-tools
+    [cinder]
+    name = {{ cinder_name }}
+    description = {{ cinder_description }}
+    driver_name = {{ cinder_driver_name }}
+    config_path = {{ cinder_config_path }}
+  args:
+    chdir: "{{ opensds_config_dir }}"
+  ignore_errors: yes
 
-- name: install docker-compose
-  pip:
-    name: docker-compose
-
-- name: copy opensds cinder backend file if specify cinder backend
+- name: copy opensds cinder backend file to cinder config path if specify cinder backend
   copy:
     src: ../../../group_vars/cinder/cinder.yaml
     dest: "{{ cinder_config_path }}"
@@ -39,6 +60,11 @@
               [[ -f $backing_file ]] || truncate -s $size $backing_file
               local vg_dev
               vg_dev=`sudo losetup -f --show $backing_file`
+
+              # Only create physical volume if it doesn't already exist
+              if ! sudo pvs $vg_dev; then
+                  sudo pvcreate $vg_dev
+              fi
 
               # Only create volume group if it doesn't already exist
               if ! sudo vgs $vg; then
@@ -120,6 +146,8 @@
     sed -i "s/image: debian-cinder/image: {{ cinder_image_tag }}/g" docker-compose.yml
     sed -i "s/image: lvm-debian-cinder/image: lvm-{{ cinder_image_tag }}/g" docker-compose.yml
 
+    sed -i "s/3306:3306/3307:3306/g" docker-compose.yml
+
     sed -i "s/volume_group = cinder-volumes /volume_group = {{ cinder_volume_group }}/g" etc/cinder.conf
   become: true
   args:
@@ -141,5 +169,5 @@
   wait_for:
     host: 127.0.0.1
     port: 8776
-    delay: 2
+    delay: 15
     timeout: 120

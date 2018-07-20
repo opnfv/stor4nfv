@@ -1,20 +1,78 @@
----
-- name: install lvm2 external package when lvm backend enabled
-  apt:
-    name: lvm2
+# Copyright (c) 2018 Huawei Technologies Co., Ltd. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-- name: copy opensds lvm backend file if specify lvm backend
+---
+- name: install lvm2 ang tgt external package when lvm backend enabled
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - lvm2
+    - tgt
+    - thin-provisioning-tools
+
+- name: configure lvm section in opensds global info if specify lvm backend
+  shell: |
+    cat >> opensds.conf <<OPENSDS_GLOABL_CONFIG_DOC
+
+    [lvm]
+    name = {{ lvm_name }}
+    description = {{ lvm_description }}
+    driver_name = {{ lvm_driver_name }}
+    config_path = {{ lvm_config_path }}
+  args:
+    chdir: "{{ opensds_config_dir }}"
+  ignore_errors: yes
+
+- name: copy opensds lvm backend file to lvm config path if specify lvm backend
   copy:
     src: ../../../group_vars/lvm/lvm.yaml
     dest: "{{ lvm_config_path }}"
 
-- name: check if volume group existed
-  shell: vgdisplay {{ vg_name }}
-  ignore_errors: yes
-  register: vg_existed
+- name: create directory to volume group file
+  file:
+    path: "{{ opensds_work_dir }}/volumegroups"
+    state: directory
+    recurse: yes
 
-- name: create a volume group and initialize it
-  lvg:
-    vg: "{{ vg_name }}"
-    pvs: "{{ pv_devices }}"
-  when: vg_existed is undefined or vg_existed.rc != 0
+- name: create volume group in thin mode
+  shell:
+    _raw_params: |
+      function _create_lvm_volume_group {
+          local vg=$1
+          local size=$2
+
+          local backing_file={{ opensds_work_dir }}/volumegroups/${vg}.img
+          if ! sudo vgs $vg; then
+              # Only create if the file doesn't already exists
+              [[ -f $backing_file ]] || truncate -s $size $backing_file
+              local vg_dev
+              vg_dev=`sudo losetup -f --show $backing_file`
+
+              # Only create physical volume if it doesn't already exist
+              if ! sudo pvs $vg_dev; then
+                  sudo pvcreate $vg_dev
+              fi
+
+              # Only create volume group if it doesn't already exist
+              if ! sudo vgs $vg; then
+                  sudo vgcreate $vg $vg_dev
+              fi
+          fi
+      }
+      modprobe dm_thin_pool
+      _create_lvm_volume_group {{ opensds_volume_group }} 10G
+  args:
+    executable: /bin/bash
+  become: true
