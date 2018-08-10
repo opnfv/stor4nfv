@@ -15,21 +15,6 @@ Install docker:
 wget https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_18.03.1~ce-0~ubuntu_amd64.deb
 dpkg -i docker-ce_18.03.1~ce-0~ubuntu_amd64.deb 
 ```
-* golang
-
-Check golang version information:
-```bash
-root@proxy:~# go version
-go version go1.9.2 linux/amd64
-```
-You can install golang by executing commands below:
-```bash
-wget https://storage.googleapis.com/golang/go1.9.2.linux-amd64.tar.gz
-tar -C /usr/local -xzf go1.9.2.linux-amd64.tar.gz
-echo 'export PATH=$PATH:/usr/local/go/bin' >> /etc/profile
-echo 'export GOPATH=$HOME/gopath' >> /etc/profile
-source /etc/profile
-```
 
 ### Download opensds-installer code
 ```bash

@@ -23,21 +23,6 @@ Install docker:
 wget https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_18.03.1~ce-0~ubuntu_amd64.deb
 dpkg -i docker-ce_18.03.1~ce-0~ubuntu_amd64.deb 
 ```
-* golang
-
-Check golang version information:
-```bash
-root@proxy:~# go version
-go version go1.9.2 linux/amd64
-```
-You can install golang by executing commands below:
-```bash
-wget https://storage.googleapis.com/golang/go1.9.2.linux-amd64.tar.gz
-tar -C /usr/local -xzf go1.9.2.linux-amd64.tar.gz
-echo 'export PATH=$PATH:/usr/local/go/bin' >> /etc/profile
-echo 'export GOPATH=$HOME/gopath' >> /etc/profile
-source /etc/profile
-```
 
 ## Start deployment
 ### Download opensds-installer code
@@ -98,18 +83,17 @@ ansible all -m ping -i local.hosts
 ansible-playbook site.yml -i local.hosts
 ```
 
-And next build and run cindercompatibleapi module:
-```shell
-cd $GOPATH/src/github.com/opensds/opensds
-go build -o ./build/out/bin/cindercompatibleapi github.com/opensds/opensds/contrib/cindercompatibleapi
-```
-
 ## Test
 ```shell
 export CINDER_ENDPOINT=http://10.10.3.173:8776/v3 # Use endpoint shown above
 export OPENSDS_ENDPOINT=http://127.0.0.1:50040
 
-./build/out/bin/cindercompatibleapi
+chmod +x ../bin/cindercompatibleapi && ../bin/cindercompatibleapi
+```
+
+Please create a default opensds profile after initializing opensds cluster:
+```shell
+osdsctl profile create '{"name": "default", "description": "default policy"}'
 ```
 
 Then you can execute some cinder cli commands to see if the result is correct,
