@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9a561d44_82e2809d",
+        "filename": "INFO.yaml",
+        "patchSetId": 1
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 6629
+      },
+      "writtenOn": "2018-08-15T01:20:58Z",
+      "side": 1,
+      "message": "I guess the project lead has been updated?",
+      "range": {
+        "startLine": 9,
+        "startChar": 0,
+        "endLine": 9,
+        "endChar": 4
+      },
+      "revId": "0ce875f18e57ce2f3d047cfc87936f5d1bad771c",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    }
+  ]
+}
