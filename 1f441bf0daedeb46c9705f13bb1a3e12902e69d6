@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a682502_b525600c",
+        "filename": ".gitignore",
+        "patchSetId": 1
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1451
+      },
+      "writtenOn": "2018-09-06T08:01:39Z",
+      "side": 1,
+      "message": "this should be on a separate line",
+      "range": {
+        "startLine": 1,
+        "startChar": 6,
+        "endLine": 1,
+        "endChar": 19
+      },
+      "revId": "1f441bf0daedeb46c9705f13bb1a3e12902e69d6",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a682502_55116cab",
+        "filename": "docs/index.rst",
+        "patchSetId": 1
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1451
+      },
+      "writtenOn": "2018-09-06T08:01:39Z",
+      "side": 1,
+      "message": "Remove whitespace",
+      "range": {
+        "startLine": 15,
+        "startChar": 0,
+        "endLine": 15,
+        "endChar": 3
+      },
+      "revId": "1f441bf0daedeb46c9705f13bb1a3e12902e69d6",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    }
+  ]
+}
