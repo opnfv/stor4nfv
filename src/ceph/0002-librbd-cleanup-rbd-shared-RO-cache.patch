@@ -1,0 +1,847 @@
+From 26f4a0804c035895fd77e9a70f47ede3f4512bde Mon Sep 17 00:00:00 2001
+From: Yuan Zhou <yuan.zhou@intel.com>
+Date: Wed, 20 Jun 2018 11:34:17 +0800
+Subject: [PATCH 02/10] librbd: cleanup rbd shared RO cache
+
+- adding namespace for rbd cache controller
+- move SyncFile code under librbd/cache/
+
+Signed-off-by: Yuan Zhou <yuan.zhou@intel.com>
+---
+ src/librbd/CMakeLists.txt                          |   2 +-
+ src/librbd/cache/SharedPersistentObjectCacher.cc   |   4 +-
+ src/librbd/cache/SharedPersistentObjectCacher.h    |   6 +-
+ .../cache/SharedPersistentObjectCacherFile.cc      | 114 +++++++++++++++++++++
+ .../cache/SharedPersistentObjectCacherFile.h       |  74 +++++++++++++
+ .../SharedPersistentObjectCacherObjectDispatch.cc  |   4 +-
+ .../SharedPersistentObjectCacherObjectDispatch.h   |   2 +-
+ src/os/CacheStore/SyncFile.cc                      | 110 --------------------
+ src/os/CacheStore/SyncFile.h                       |  74 -------------
+ src/tools/rbd_cache/CMakeLists.txt                 |   2 +-
+ src/tools/rbd_cache/CacheController.cc             |   9 +-
+ src/tools/rbd_cache/CacheController.h              |  55 ++++++++++
+ src/tools/rbd_cache/CacheController.hpp            |  49 ---------
+ src/tools/rbd_cache/CacheControllerSocket.hpp      |   6 ++
+ .../rbd_cache/CacheControllerSocketClient.hpp      |   5 +
+ src/tools/rbd_cache/CacheControllerSocketCommon.h  |   5 +
+ src/tools/rbd_cache/ObjectCacheStore.cc            |   7 +-
+ src/tools/rbd_cache/ObjectCacheStore.h             |   9 +-
+ src/tools/rbd_cache/main.cc                        |   6 +-
+ 19 files changed, 293 insertions(+), 250 deletions(-)
+ create mode 100644 src/librbd/cache/SharedPersistentObjectCacherFile.cc
+ create mode 100644 src/librbd/cache/SharedPersistentObjectCacherFile.h
+ delete mode 100644 src/os/CacheStore/SyncFile.cc
+ delete mode 100644 src/os/CacheStore/SyncFile.h
+ create mode 100644 src/tools/rbd_cache/CacheController.h
+ delete mode 100644 src/tools/rbd_cache/CacheController.hpp
+
+diff --git a/src/librbd/CMakeLists.txt b/src/librbd/CMakeLists.txt
+index 92539a8..540ee78 100644
+--- a/src/librbd/CMakeLists.txt
++++ b/src/librbd/CMakeLists.txt
+@@ -34,6 +34,7 @@ set(librbd_internal_srcs
+   cache/ObjectCacherObjectDispatch.cc
+   cache/SharedPersistentObjectCacherObjectDispatch.cc
+   cache/SharedPersistentObjectCacher.cc
++  cache/SharedPersistentObjectCacherFile.cc
+   deep_copy/ImageCopyRequest.cc
+   deep_copy/MetadataCopyRequest.cc
+   deep_copy/ObjectCopyRequest.cc
+@@ -124,7 +125,6 @@ set(librbd_internal_srcs
+   trash/MoveRequest.cc
+   watcher/Notifier.cc
+   watcher/RewatchRequest.cc
+-  ${CMAKE_SOURCE_DIR}/src/os/CacheStore/SyncFile.cc
+   ${CMAKE_SOURCE_DIR}/src/common/ContextCompletion.cc)
+ 
+ add_library(rbd_api STATIC librbd.cc)
+diff --git a/src/librbd/cache/SharedPersistentObjectCacher.cc b/src/librbd/cache/SharedPersistentObjectCacher.cc
+index a849260..260567c 100644
+--- a/src/librbd/cache/SharedPersistentObjectCacher.cc
++++ b/src/librbd/cache/SharedPersistentObjectCacher.cc
+@@ -19,7 +19,7 @@ SharedPersistentObjectCacher<I>::SharedPersistentObjectCacher(I *image_ctx, std:
+   : m_image_ctx(image_ctx), m_cache_path(cache_path),
+     m_file_map_lock("librbd::cache::SharedObjectCacher::filemaplock") {
+   auto *cct = m_image_ctx->cct;
+-
++  ldout(cct, 20) << dendl;
+ }
+ 
+ template <typename I>
+@@ -40,7 +40,7 @@ int SharedPersistentObjectCacher<I>::read_object(std::string oid, ceph::bufferli
+   std::string cache_file_name = m_image_ctx->data_ctx.get_pool_name() + oid;
+ 
+   //TODO(): make a cache for cachefile fd
+-  os::CacheStore::SyncFile* target_cache_file = new os::CacheStore::SyncFile(cct, cache_file_name);
++  SyncFile* target_cache_file = new SyncFile(cct, cache_file_name);
+   target_cache_file->open();
+ 
+   int ret = target_cache_file->read_object_from_file(read_data, offset, length);
+diff --git a/src/librbd/cache/SharedPersistentObjectCacher.h b/src/librbd/cache/SharedPersistentObjectCacher.h
+index d108a05..af04e63 100644
+--- a/src/librbd/cache/SharedPersistentObjectCacher.h
++++ b/src/librbd/cache/SharedPersistentObjectCacher.h
+@@ -6,7 +6,7 @@
+ 
+ #include "include/buffer_fwd.h"
+ #include "include/int_types.h"
+-#include "os/CacheStore/SyncFile.h"
++#include "SharedPersistentObjectCacherFile.h"
+ #include "common/Mutex.h"
+ #include <vector>
+ #include <map>
+@@ -31,9 +31,9 @@ public:
+ 
+ private:
+   ImageCtxT *m_image_ctx;
+-  std::map<std::string,  os::CacheStore::SyncFile*> file_map;
+-  Mutex m_file_map_lock;
+   std::string m_cache_path;
++  Mutex m_file_map_lock;
++  std::map<std::string,  SyncFile*> file_map;
+ 
+ };
+ 
+diff --git a/src/librbd/cache/SharedPersistentObjectCacherFile.cc b/src/librbd/cache/SharedPersistentObjectCacherFile.cc
+new file mode 100644
+index 0000000..75a3053
+--- /dev/null
++++ b/src/librbd/cache/SharedPersistentObjectCacherFile.cc
+@@ -0,0 +1,114 @@
++// -*- mode:C++; tab-width:8; c-basic-offset:2; indent-tabs-mode:t -*-
++// vim: ts=8 sw=2 smarttab
++
++#include "SharedPersistentObjectCacherFile.h"
++#include "include/Context.h"
++#include "common/dout.h"
++#include "common/WorkQueue.h"
++#include "librbd/ImageCtx.h"
++#include <sys/types.h>
++#include <sys/stat.h>
++#include <aio.h>
++#include <errno.h>
++#include <fcntl.h>
++#include <utility>
++
++#define dout_subsys ceph_subsys_rbd
++#undef dout_prefix
++#define dout_prefix *_dout << "librbd::cache::SyncFile: " << this << " " \
++                           <<  __func__ << ": "
++
++namespace librbd {
++namespace cache {
++
++SyncFile::SyncFile(CephContext *cct, const std::string &name)
++  : cct(cct) {
++  m_name = cct->_conf->get_val<std::string>("rbd_shared_cache_path") + "/rbd_cache." + name;
++  ldout(cct, 20) << "file path=" << m_name << dendl;
++}
++
++SyncFile::~SyncFile() {
++  // TODO force proper cleanup
++  if (m_fd != -1) {
++    ::close(m_fd);
++  }
++}
++
++void SyncFile::open(Context *on_finish) {
++  while (true) {
++    m_fd = ::open(m_name.c_str(), O_CREAT | O_DIRECT | O_NOATIME | O_RDWR | O_SYNC,
++                  S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
++    if (m_fd == -1) {
++      int r = -errno;
++      if (r == -EINTR) {
++        continue;
++      }
++      on_finish->complete(r);
++      return;
++    }
++    break;
++  }
++
++  on_finish->complete(0);
++}
++
++void SyncFile::open() {
++  while (true) 
++  {
++    m_fd = ::open(m_name.c_str(), O_CREAT | O_NOATIME | O_RDWR | O_SYNC,
++                  S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
++    if (m_fd == -1) 
++    {
++      int r = -errno;
++      if (r == -EINTR) {
++        continue;
++      }
++      return;
++    }
++    break;
++  }
++}
++
++void SyncFile::read(uint64_t offset, uint64_t length, ceph::bufferlist *bl, Context *on_finish) {
++  on_finish->complete(read_object_from_file(bl, offset, length));
++}
++
++void SyncFile::write(uint64_t offset, ceph::bufferlist &&bl, bool fdatasync, Context *on_finish) {
++  on_finish->complete(write_object_to_file(bl, bl.length()));
++}
++
++int SyncFile::write_object_to_file(ceph::bufferlist read_buf, uint64_t object_len) {
++
++  ldout(cct, 20) << "cache file name:" << m_name
++                 << ", length:" << object_len <<  dendl;
++
++  // TODO(): aio
++  int ret = pwrite(m_fd, read_buf.c_str(), object_len, 0); 
++  if(ret < 0) {
++    lderr(cct)<<"write file fail:" << std::strerror(errno) << dendl;
++    return ret;
++  }
++
++  return ret;
++}
++
++int SyncFile::read_object_from_file(ceph::bufferlist* read_buf, uint64_t object_off, uint64_t object_len) {
++
++  ldout(cct, 20) << "offset:" << object_off
++                 << ", length:" << object_len <<  dendl;
++
++  bufferptr buf(object_len);
++
++  // TODO(): aio
++  int ret = pread(m_fd, buf.c_str(), object_len, object_off); 
++  if(ret < 0) {
++    lderr(cct)<<"read file fail:" << std::strerror(errno) << dendl;
++    return ret;
++  }
++  read_buf->append(std::move(buf));
++
++  return ret;
++}
++
++} // namespace cache
++} // namespace librbd
+diff --git a/src/librbd/cache/SharedPersistentObjectCacherFile.h b/src/librbd/cache/SharedPersistentObjectCacherFile.h
+new file mode 100644
+index 0000000..ccbe730
+--- /dev/null
++++ b/src/librbd/cache/SharedPersistentObjectCacherFile.h
+@@ -0,0 +1,74 @@
++// -*- mode:C++; tab-width:8; c-basic-offset:2; indent-tabs-mode:t -*-
++// vim: ts=8 sw=2 smarttab
++
++#ifndef CEPH_LIBRBD_CACHE_STORE_SYNC_FILE
++#define CEPH_LIBRBD_CACHE_STORE_SYNC_FILE
++
++#include "include/buffer_fwd.h"
++#include <sys/mman.h>
++#include <string>
++
++struct Context;
++struct ContextWQ;
++class CephContext;
++
++namespace librbd {
++
++namespace cache {
++
++class SyncFile {
++public:
++  SyncFile(CephContext *cct, const std::string &name);
++  ~SyncFile();
++
++  // TODO use IO queue instead of individual commands so operations can be
++  // submitted in batch
++
++  // TODO use scatter/gather API
++
++  void open(Context *on_finish);
++
++  // ##
++  void open();
++  bool try_open();
++  void close(Context *on_finish);
++  void remove(Context *on_finish);
++
++  void read(uint64_t offset, uint64_t length, ceph::bufferlist *bl, Context *on_finish);
++
++  void write(uint64_t offset, ceph::bufferlist &&bl, bool fdatasync, Context *on_finish);
++
++  void discard(uint64_t offset, uint64_t length, bool fdatasync, Context *on_finish);
++
++  void truncate(uint64_t length, bool fdatasync, Context *on_finish);
++
++  void fsync(Context *on_finish);
++
++  void fdatasync(Context *on_finish);
++
++  uint64_t filesize();
++
++  int load(void** dest, uint64_t filesize);
++
++  int remove();
++
++  // ##
++  int write_object_to_file(ceph::bufferlist read_buf, uint64_t object_len);
++  int read_object_from_file(ceph::bufferlist* read_buf, uint64_t object_off, uint64_t object_len);
++
++private:
++  CephContext *cct;
++  std::string m_name;
++  int m_fd = -1;
++
++  int write(uint64_t offset, const ceph::bufferlist &bl, bool fdatasync);
++  int read(uint64_t offset, uint64_t length, ceph::bufferlist *bl);
++  int discard(uint64_t offset, uint64_t length, bool fdatasync);
++  int truncate(uint64_t length, bool fdatasync);
++  int fdatasync();
++};
++
++} // namespace cache
++} // namespace librbd
++
++#endif // CEPH_LIBRBD_CACHE_STORE_SYNC_FILE
+diff --git a/src/librbd/cache/SharedPersistentObjectCacherObjectDispatch.cc b/src/librbd/cache/SharedPersistentObjectCacherObjectDispatch.cc
+index 90d886c..2aa5cad 100644
+--- a/src/librbd/cache/SharedPersistentObjectCacherObjectDispatch.cc
++++ b/src/librbd/cache/SharedPersistentObjectCacherObjectDispatch.cc
+@@ -52,7 +52,7 @@ void SharedPersistentObjectCacherObjectDispatch<I>::init() {
+   ldout(cct, 20) << "parent image: setup SRO cache client = " << dendl;
+ 
+   std::string controller_path = "/tmp/rbd_shared_readonly_cache_demo";
+-  m_cache_client = new CacheClient(io_service, controller_path.c_str(),
++  m_cache_client = new rbd::cache::CacheClient(io_service, controller_path.c_str(),
+     ([&](std::string s){client_handle_request(s);}));
+ 
+   int ret = m_cache_client->connect();
+@@ -120,7 +120,7 @@ void SharedPersistentObjectCacherObjectDispatch<I>::client_handle_request(std::s
+   auto cct = m_image_ctx->cct;
+   ldout(cct, 20) << dendl;
+ 
+-  rbdsc_req_type_t *io_ctx = (rbdsc_req_type_t*)(msg.c_str());
++  rbd::cache::rbdsc_req_type_t *io_ctx = (rbd::cache::rbdsc_req_type_t*)(msg.c_str());
+ 
+   switch (io_ctx->type) {
+     case RBDSC_REGISTER_REPLY: {
+diff --git a/src/librbd/cache/SharedPersistentObjectCacherObjectDispatch.h b/src/librbd/cache/SharedPersistentObjectCacherObjectDispatch.h
+index 1ede804..200688f 100644
+--- a/src/librbd/cache/SharedPersistentObjectCacherObjectDispatch.h
++++ b/src/librbd/cache/SharedPersistentObjectCacherObjectDispatch.h
+@@ -115,7 +115,7 @@ private:
+   ImageCtxT* m_image_ctx;
+ 
+   void client_handle_request(std::string msg);
+-  CacheClient *m_cache_client = nullptr;
++  rbd::cache::CacheClient *m_cache_client = nullptr;
+   boost::asio::io_service io_service;
+ };
+ 
+diff --git a/src/os/CacheStore/SyncFile.cc b/src/os/CacheStore/SyncFile.cc
+deleted file mode 100644
+index 5352bde..0000000
+--- a/src/os/CacheStore/SyncFile.cc
++++ /dev/null
+@@ -1,110 +0,0 @@
+-// -*- mode:C++; tab-width:8; c-basic-offset:2; indent-tabs-mode:t -*-
+-// vim: ts=8 sw=2 smarttab
+-
+-#include "os/CacheStore/SyncFile.h"
+-#include "include/Context.h"
+-#include "common/dout.h"
+-#include "common/WorkQueue.h"
+-#include "librbd/ImageCtx.h"
+-#include <sys/types.h>
+-#include <sys/stat.h>
+-#include <aio.h>
+-#include <errno.h>
+-#include <fcntl.h>
+-#include <utility>
+-
+-#define dout_subsys ceph_subsys_rbd
+-#undef dout_prefix
+-#define dout_prefix *_dout << "librbd::file::SyncFile: " << this << " " \
+-                           <<  __func__ << ": "
+-
+-namespace os {
+-namespace CacheStore {
+-
+-SyncFile::SyncFile(CephContext *cct, const std::string &name)
+-  : cct(cct)
+-{
+-  m_name = cct->_conf->get_val<std::string>("rbd_shared_cache_path") + "/rbd_cache." + name;
+-  ldout(cct, 20) << "file path=" << m_name << dendl;
+-}
+-
+-SyncFile::~SyncFile() 
+-{
+-  // TODO force proper cleanup
+-  if (m_fd != -1) {
+-    ::close(m_fd);
+-  }
+-}
+-
+-void SyncFile::open(Context *on_finish) 
+-{
+-  while (true) {
+-    m_fd = ::open(m_name.c_str(), O_CREAT | O_DIRECT | O_NOATIME | O_RDWR | O_SYNC,
+-                  S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+-    if (m_fd == -1) {
+-      int r = -errno;
+-      if (r == -EINTR) {
+-        continue;
+-      }
+-      on_finish->complete(r);
+-      return;
+-    }
+-    break;
+-  }
+-
+-  on_finish->complete(0);
+-}
+-
+-void SyncFile::open() 
+-{
+-  while (true) 
+-  {
+-    m_fd = ::open(m_name.c_str(), O_CREAT | O_NOATIME | O_RDWR | O_SYNC,
+-                  S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+-    if (m_fd == -1) 
+-    {
+-      int r = -errno;
+-      if (r == -EINTR) {
+-        continue;
+-      }
+-      return;
+-    }
+-    break;
+-  }
+-}
+-
+-int SyncFile::write_object_to_file(ceph::bufferlist read_buf, uint64_t object_len) {
+-
+-  ldout(cct, 20) << "cache file name:" << m_name
+-                 << ", length:" << object_len <<  dendl;
+-
+-  // TODO(): aio
+-  int ret = pwrite(m_fd, read_buf.c_str(), object_len, 0); 
+-  if(ret < 0) {
+-    lderr(cct)<<"write file fail:" << std::strerror(errno) << dendl;
+-    return ret;
+-  }
+-
+-  return ret;
+-}
+-
+-int SyncFile::read_object_from_file(ceph::bufferlist* read_buf, uint64_t object_off, uint64_t object_len) {
+-
+-  ldout(cct, 20) << "offset:" << object_off
+-                 << ", length:" << object_len <<  dendl;
+-
+-  bufferptr buf(object_len);
+-
+-  // TODO(): aio
+-  int ret = pread(m_fd, buf.c_str(), object_len, object_off); 
+-  if(ret < 0) {
+-    lderr(cct)<<"read file fail:" << std::strerror(errno) << dendl;
+-    return ret;
+-  }
+-  read_buf->append(std::move(buf));
+-
+-  return ret;
+-}
+-
+-} // namespace CacheStore
+-} // namespace os
+diff --git a/src/os/CacheStore/SyncFile.h b/src/os/CacheStore/SyncFile.h
+deleted file mode 100644
+index 81602ce..0000000
+--- a/src/os/CacheStore/SyncFile.h
++++ /dev/null
+@@ -1,74 +0,0 @@
+-// -*- mode:C++; tab-width:8; c-basic-offset:2; indent-tabs-mode:t -*-
+-// vim: ts=8 sw=2 smarttab
+-
+-#ifndef CEPH_LIBOS_CACHE_STORE_SYNC_FILE
+-#define CEPH_LIBOS_CACHE_STORE_SYNC_FILE
+-
+-#include "include/buffer_fwd.h"
+-#include <sys/mman.h>
+-#include <string>
+-
+-struct Context;
+-struct ContextWQ;
+-class CephContext;
+-
+-namespace os {
+-
+-namespace CacheStore {
+-
+-class SyncFile {
+-public:
+-  SyncFile(CephContext *cct, const std::string &name);
+-  ~SyncFile();
+-
+-  // TODO use IO queue instead of individual commands so operations can be
+-  // submitted in batch
+-
+-  // TODO use scatter/gather API
+-
+-  void open(Context *on_finish);
+-
+-  // ##
+-  void open();
+-  bool try_open();
+-  void close(Context *on_finish);
+-  void remove(Context *on_finish);
+-
+-  void read(uint64_t offset, uint64_t length, ceph::bufferlist *bl, Context *on_finish);
+-
+-  void write(uint64_t offset, ceph::bufferlist &&bl, bool fdatasync, Context *on_finish);
+-
+-  void discard(uint64_t offset, uint64_t length, bool fdatasync, Context *on_finish);
+-
+-  void truncate(uint64_t length, bool fdatasync, Context *on_finish);
+-
+-  void fsync(Context *on_finish);
+-
+-  void fdatasync(Context *on_finish);
+-
+-  uint64_t filesize();
+-
+-  int load(void** dest, uint64_t filesize);
+-
+-  int remove();
+-
+-  // ##
+-  int write_object_to_file(ceph::bufferlist read_buf, uint64_t object_len);
+-  int read_object_from_file(ceph::bufferlist* read_buf, uint64_t object_off, uint64_t object_len);
+-
+-private:
+-  CephContext *cct;
+-  std::string m_name;
+-  int m_fd = -1;
+-
+-  int write(uint64_t offset, const ceph::bufferlist &bl, bool fdatasync);
+-  int read(uint64_t offset, uint64_t length, ceph::bufferlist *bl);
+-  int discard(uint64_t offset, uint64_t length, bool fdatasync);
+-  int truncate(uint64_t length, bool fdatasync);
+-  int fdatasync();
+-};
+-
+-} // namespace CacheStore
+-} // namespace os
+-
+-#endif // CEPH_LIBOS_CACHE_STORE_SYNC_FILE
+diff --git a/src/tools/rbd_cache/CMakeLists.txt b/src/tools/rbd_cache/CMakeLists.txt
+index 08eae60..597d802 100644
+--- a/src/tools/rbd_cache/CMakeLists.txt
++++ b/src/tools/rbd_cache/CMakeLists.txt
+@@ -1,5 +1,5 @@
+ add_executable(rbd-cache
+-  ${CMAKE_SOURCE_DIR}/src/os/CacheStore/SyncFile.cc
++  ${CMAKE_SOURCE_DIR}/src/librbd/cache/SharedPersistentObjectCacherFile.cc
+   ObjectCacheStore.cc
+   CacheController.cc
+   main.cc)
+diff --git a/src/tools/rbd_cache/CacheController.cc b/src/tools/rbd_cache/CacheController.cc
+index c914358..e73ba25 100644
+--- a/src/tools/rbd_cache/CacheController.cc
++++ b/src/tools/rbd_cache/CacheController.cc
+@@ -1,7 +1,7 @@
+ // -*- mode:C++; tab-width:8; c-basic-offset:2; indent-tabs-mode:t -*-
+ // vim: ts=8 sw=2 smarttab
+ 
+-#include "CacheController.hpp"
++#include "CacheController.h"
+ 
+ #define dout_context g_ceph_context
+ #define dout_subsys ceph_subsys_rbd_cache
+@@ -9,6 +9,8 @@
+ #define dout_prefix *_dout << "rbd::cache::CacheController: " << this << " " \
+                            << __func__ << ": "
+ 
++namespace rbd {
++namespace cache {
+ 
+ class ThreadPoolSingleton : public ThreadPool {
+ public:
+@@ -103,3 +105,8 @@ void CacheController::handle_request(uint64_t sesstion_id, std::string msg){
+     
+   }
+ }
++
++} // namespace rbd
++} // namespace cache
++
++
+diff --git a/src/tools/rbd_cache/CacheController.h b/src/tools/rbd_cache/CacheController.h
+new file mode 100644
+index 0000000..0e3abc1
+--- /dev/null
++++ b/src/tools/rbd_cache/CacheController.h
+@@ -0,0 +1,55 @@
++#ifndef CACHE_CONTROLLER_H
++#define CACHE_CONTROLLER_H
++
++#include <thread>
++
++#include "common/Formatter.h"
++#include "common/admin_socket.h"
++#include "common/debug.h"
++#include "common/errno.h"
++#include "common/ceph_context.h"
++#include "common/Mutex.h"
++#include "common/WorkQueue.h"
++#include "include/rados/librados.hpp"
++#include "include/rbd/librbd.h"
++#include "include/assert.h"
++#include "librbd/ImageCtx.h"
++#include "librbd/ImageState.h"
++
++#include "CacheControllerSocket.hpp"
++#include "ObjectCacheStore.h"
++
++
++using boost::asio::local::stream_protocol;
++
++namespace rbd {
++namespace cache {
++
++class CacheController {
++ public:
++  CacheController(CephContext *cct, const std::vector<const char*> &args);
++  ~CacheController();
++
++  int init();
++
++  int shutdown();
++
++  void handle_signal(int sinnum);
++
++  void run();
++
++  void handle_request(uint64_t sesstion_id, std::string msg);
++
++ private:
++  boost::asio::io_service io_service;
++  CacheServer *m_cache_server;
++  std::vector<const char*> m_args;
++  CephContext *m_cct;
++  ObjectCacheStore *m_object_cache_store;
++  ContextWQ* pcache_op_work_queue;
++};
++
++} // namespace rbd
++} // namespace cache
++
++#endif
+diff --git a/src/tools/rbd_cache/CacheController.hpp b/src/tools/rbd_cache/CacheController.hpp
+deleted file mode 100644
+index 97113e4..0000000
+--- a/src/tools/rbd_cache/CacheController.hpp
++++ /dev/null
+@@ -1,49 +0,0 @@
+-#ifndef CACHE_CONTROLLER_H
+-#define CACHE_CONTROLLER_H
+-
+-#include <thread>
+-
+-#include "common/Formatter.h"
+-#include "common/admin_socket.h"
+-#include "common/debug.h"
+-#include "common/errno.h"
+-#include "common/ceph_context.h"
+-#include "common/Mutex.h"
+-#include "common/WorkQueue.h"
+-#include "include/rados/librados.hpp"
+-#include "include/rbd/librbd.h"
+-#include "include/assert.h"
+-#include "librbd/ImageCtx.h"
+-#include "librbd/ImageState.h"
+-
+-#include "CacheControllerSocket.hpp"
+-#include "ObjectCacheStore.h"
+-
+-
+-using boost::asio::local::stream_protocol;
+-
+-class CacheController {
+- public:
+-  CacheController(CephContext *cct, const std::vector<const char*> &args);
+-  ~CacheController();
+-
+-  int init();
+-
+-  int shutdown();
+-
+-  void handle_signal(int sinnum);
+-
+-  void run();
+-
+-  void handle_request(uint64_t sesstion_id, std::string msg);
+-
+- private:
+-  boost::asio::io_service io_service;
+-  CacheServer *m_cache_server;
+-  std::vector<const char*> m_args;
+-  CephContext *m_cct;
+-  ObjectCacheStore *m_object_cache_store;
+-  ContextWQ* pcache_op_work_queue;
+-};
+-
+-#endif
+diff --git a/src/tools/rbd_cache/CacheControllerSocket.hpp b/src/tools/rbd_cache/CacheControllerSocket.hpp
+index 6e1a743..967af1d 100644
+--- a/src/tools/rbd_cache/CacheControllerSocket.hpp
++++ b/src/tools/rbd_cache/CacheControllerSocket.hpp
+@@ -17,6 +17,9 @@
+ 
+ using boost::asio::local::stream_protocol;
+ 
++namespace rbd {
++namespace cache {
++
+ class session : public std::enable_shared_from_this<session> {
+ public:
+   session(uint64_t session_id, boost::asio::io_service& io_service, ProcessMsg processmsg)
+@@ -122,4 +125,7 @@ private:
+   std::map<uint64_t, session_ptr> session_map;
+ };
+ 
++} // namespace cache
++} // namespace rbd
++
+ #endif
+diff --git a/src/tools/rbd_cache/CacheControllerSocketClient.hpp b/src/tools/rbd_cache/CacheControllerSocketClient.hpp
+index 8e61aa9..57be78e 100644
+--- a/src/tools/rbd_cache/CacheControllerSocketClient.hpp
++++ b/src/tools/rbd_cache/CacheControllerSocketClient.hpp
+@@ -13,6 +13,9 @@
+ 
+ using boost::asio::local::stream_protocol;
+ 
++namespace rbd {
++namespace cache {
++
+ class CacheClient {
+ public:
+   CacheClient(boost::asio::io_service& io_service,
+@@ -128,4 +131,6 @@ public:
+   bool connected = false;
+ };
+ 
++} // namespace cache
++} // namespace rbd
+ #endif
+diff --git a/src/tools/rbd_cache/CacheControllerSocketCommon.h b/src/tools/rbd_cache/CacheControllerSocketCommon.h
+index e253bb1..ab89155 100644
+--- a/src/tools/rbd_cache/CacheControllerSocketCommon.h
++++ b/src/tools/rbd_cache/CacheControllerSocketCommon.h
+@@ -12,6 +12,9 @@
+ #define RBDSC_LOOKUP_REPLY     0X16
+ #define RBDSC_READ_RADOS       0X16
+ 
++namespace rbd {
++namespace cache {
++
+ typedef std::function<void(uint64_t, std::string)> ProcessMsg;
+ typedef std::function<void(std::string)> ClientProcessMsg;
+ typedef uint8_t rbdsc_req_type;
+@@ -40,4 +43,6 @@ struct rbdsc_req_type_t {
+   }
+ };
+ 
++} // namespace cache
++} // namespace rbd
+ #endif
+diff --git a/src/tools/rbd_cache/ObjectCacheStore.cc b/src/tools/rbd_cache/ObjectCacheStore.cc
+index 90b407c..9572a1a 100644
+--- a/src/tools/rbd_cache/ObjectCacheStore.cc
++++ b/src/tools/rbd_cache/ObjectCacheStore.cc
+@@ -9,6 +9,8 @@
+ #define dout_prefix *_dout << "rbd::cache::ObjectCacheStore: " << this << " " \
+                            << __func__ << ": "
+ 
++namespace rbd {
++namespace cache {
+ 
+ ObjectCacheStore::ObjectCacheStore(CephContext *cct, ContextWQ* work_queue)
+       : m_cct(cct), m_work_queue(work_queue),
+@@ -77,7 +79,7 @@ int ObjectCacheStore::do_promote(std::string pool_name, std::string object_name)
+   }
+ 
+   // persistent to cache
+-  os::CacheStore::SyncFile cache_file(m_cct, cache_file_name);
++  librbd::cache::SyncFile cache_file(m_cct, cache_file_name);
+   cache_file.open();
+   ret = cache_file.write_object_to_file(read_buf, object_size);
+   
+@@ -145,3 +147,6 @@ int ObjectCacheStore::promote_object(librados::IoCtx* ioctx, std::string object_
+   return ret;
+   
+ }
++
++} // namespace cache
++} // namespace rbd
+diff --git a/src/tools/rbd_cache/ObjectCacheStore.h b/src/tools/rbd_cache/ObjectCacheStore.h
+index 12f8399..a81beea 100644
+--- a/src/tools/rbd_cache/ObjectCacheStore.h
++++ b/src/tools/rbd_cache/ObjectCacheStore.h
+@@ -12,11 +12,14 @@
+ #include "include/rbd/librbd.h"
+ #include "librbd/ImageCtx.h"
+ #include "librbd/ImageState.h"
+-#include "os/CacheStore/SyncFile.h"
++#include "librbd/cache/SharedPersistentObjectCacherFile.h"
+ 
+ using librados::Rados;
+ using librados::IoCtx;
+ 
++namespace rbd {
++namespace cache {
++
+ typedef shared_ptr<librados::Rados> RadosRef;
+ typedef shared_ptr<librados::IoCtx> IoCtxRef;
+ 
+@@ -59,7 +62,9 @@ class ObjectCacheStore
+ 
+     std::map<std::string, librados::IoCtx*> m_ioctxs;
+ 
+-    os::CacheStore::SyncFile *m_cache_file;
++    librbd::cache::SyncFile *m_cache_file;
+ };
+ 
++} // namespace rbd
++} // namespace cache
+ #endif
+diff --git a/src/tools/rbd_cache/main.cc b/src/tools/rbd_cache/main.cc
+index 336a581..a7c5b64 100644
+--- a/src/tools/rbd_cache/main.cc
++++ b/src/tools/rbd_cache/main.cc
+@@ -7,11 +7,11 @@
+ #include "common/errno.h"
+ #include "global/global_init.h"
+ #include "global/signal_handler.h"
+-#include "CacheController.hpp"
++#include "CacheController.h"
+ 
+ #include <vector>
+ 
+-CacheController *cachectl = nullptr;
++rbd::cache::CacheController *cachectl = nullptr;
+ 
+ void usage() {
+   std::cout << "usage: cache controller [options...]" << std::endl;
+@@ -64,7 +64,7 @@ int main(int argc, const char **argv)
+   // disable unnecessary librbd cache
+   g_ceph_context->_conf->set_val_or_die("rbd_cache", "false");
+ 
+-  cachectl = new CacheController(g_ceph_context, cmd_args);
++  cachectl = new rbd::cache::CacheController(g_ceph_context, cmd_args);
+   int r = cachectl->init();
+   if (r < 0) {
+     std::cerr << "failed to initialize: " << cpp_strerror(r) << std::endl;
+-- 
+2.7.4
+

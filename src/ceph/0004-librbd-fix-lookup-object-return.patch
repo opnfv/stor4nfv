@@ -1,0 +1,45 @@
+From 779ef67e6a401ad569c5d3d3a076352db8ad0f67 Mon Sep 17 00:00:00 2001
+From: Yuan Zhou <yuan.zhou@intel.com>
+Date: Mon, 6 Aug 2018 15:47:23 +0800
+Subject: [PATCH 04/10] librbd: fix lookup object return
+
+Signed-off-by: Yuan Zhou <yuan.zhou@intel.com>
+---
+ src/tools/rbd_cache/CacheControllerSocketClient.hpp | 7 ++++++-
+ src/tools/rbd_cache/CacheControllerSocketCommon.h   | 2 +-
+ 2 files changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/src/tools/rbd_cache/CacheControllerSocketClient.hpp b/src/tools/rbd_cache/CacheControllerSocketClient.hpp
+index 57be78e..4e1f36c 100644
+--- a/src/tools/rbd_cache/CacheControllerSocketClient.hpp
++++ b/src/tools/rbd_cache/CacheControllerSocketClient.hpp
+@@ -99,7 +99,12 @@ public:
+         boost::asio::transfer_exactly(544),
+         [this, result](const boost::system::error_code& err, size_t cb) {
+         if (!err) {
+-            *result = true;
++	    rbdsc_req_type_t *io_ctx = (rbdsc_req_type_t*)(buffer_);
++            if (io_ctx->type == RBDSC_READ_REPLY) {
++	      *result = true;
++            } else {
++	      *result = false;
++            }
+             cv.notify_one();
+             m_client_process_msg(std::string(buffer_, cb));
+         } else {
+diff --git a/src/tools/rbd_cache/CacheControllerSocketCommon.h b/src/tools/rbd_cache/CacheControllerSocketCommon.h
+index ab89155..a9d73a8 100644
+--- a/src/tools/rbd_cache/CacheControllerSocketCommon.h
++++ b/src/tools/rbd_cache/CacheControllerSocketCommon.h
+@@ -10,7 +10,7 @@
+ #define RBDSC_REGISTER_REPLY   0X14
+ #define RBDSC_READ_REPLY       0X15
+ #define RBDSC_LOOKUP_REPLY     0X16
+-#define RBDSC_READ_RADOS       0X16
++#define RBDSC_READ_RADOS       0X17
+ 
+ namespace rbd {
+ namespace cache {
+-- 
+2.7.4
+

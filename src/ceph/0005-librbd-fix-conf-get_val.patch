@@ -1,0 +1,63 @@
+From be47f5e7980d92379b9feaef2e2f1e1579df94ba Mon Sep 17 00:00:00 2001
+From: Yuan Zhou <yuan.zhou@intel.com>
+Date: Mon, 6 Aug 2018 22:05:13 +0800
+Subject: [PATCH 05/10] librbd: fix conf get_val
+
+Signed-off-by: Yuan Zhou <yuan.zhou@intel.com>
+---
+ src/librbd/cache/SharedPersistentObjectCacherFile.cc | 2 +-
+ src/tools/rbd_cache/CacheController.cc               | 2 +-
+ src/tools/rbd_cache/main.cc                          | 4 ++--
+ 3 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/src/librbd/cache/SharedPersistentObjectCacherFile.cc b/src/librbd/cache/SharedPersistentObjectCacherFile.cc
+index 75a3053..6f9c3e0 100644
+--- a/src/librbd/cache/SharedPersistentObjectCacherFile.cc
++++ b/src/librbd/cache/SharedPersistentObjectCacherFile.cc
+@@ -23,7 +23,7 @@ namespace cache {
+ 
+ SyncFile::SyncFile(CephContext *cct, const std::string &name)
+   : cct(cct) {
+-  m_name = cct->_conf->get_val<std::string>("rbd_shared_cache_path") + "/rbd_cache." + name;
++  m_name = cct->_conf.get_val<std::string>("rbd_shared_cache_path") + "/rbd_cache." + name;
+   ldout(cct, 20) << "file path=" << m_name << dendl;
+ }
+ 
+diff --git a/src/tools/rbd_cache/CacheController.cc b/src/tools/rbd_cache/CacheController.cc
+index e73ba25..cefcf28 100644
+--- a/src/tools/rbd_cache/CacheController.cc
++++ b/src/tools/rbd_cache/CacheController.cc
+@@ -20,7 +20,7 @@ public:
+     : ThreadPool(cct, "librbd::cache::thread_pool", "tp_librbd_cache", 32,
+                  "pcache_threads"),
+       op_work_queue(new ContextWQ("librbd::pcache_op_work_queue",
+-                    cct->_conf->get_val<int64_t>("rbd_op_thread_timeout"),
++                    cct->_conf.get_val<int64_t>("rbd_op_thread_timeout"),
+                     this)) {
+     start();
+   }
+diff --git a/src/tools/rbd_cache/main.cc b/src/tools/rbd_cache/main.cc
+index a7c5b64..d604760 100644
+--- a/src/tools/rbd_cache/main.cc
++++ b/src/tools/rbd_cache/main.cc
+@@ -46,7 +46,7 @@ int main(int argc, const char **argv)
+     }
+   }
+ 
+-  if (g_conf->daemonize) {
++  if (g_conf()->daemonize) {
+     global_init_daemonize(g_ceph_context);
+   }
+   g_ceph_context->enable_perf_counter();
+@@ -62,7 +62,7 @@ int main(int argc, const char **argv)
+   argv_to_vec(argc, argv, cmd_args);
+ 
+   // disable unnecessary librbd cache
+-  g_ceph_context->_conf->set_val_or_die("rbd_cache", "false");
++  g_ceph_context->_conf.set_val_or_die("rbd_cache", "false");
+ 
+   cachectl = new rbd::cache::CacheController(g_ceph_context, cmd_args);
+   int r = cachectl->init();
+-- 
+2.7.4
+
