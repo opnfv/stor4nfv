@@ -22,7 +22,6 @@ class K8sStor4nfvTest(k8stest.K8sTesting):
         if "case_name" not in kwargs:
             kwargs.get("case_name", 'stor4nfv_k8s')
         super(K8sStor4nfvTest, self).__init__(**kwargs)
-        self.check_envs()
 
     def run_kubetest(self):
         success = True
