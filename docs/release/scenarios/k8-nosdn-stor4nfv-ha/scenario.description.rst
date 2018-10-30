@@ -2,12 +2,6 @@
 .. http://creativecommons.org/licenses/by/4.0
 .. (c) <optionally add copywriters name>
 
-This document provides scenario level details for <RELEASE> of <COMPONENT>.
-
-.. contents::
-   :depth: 3
-   :local:
-
 ============
 Introduction
 ============
@@ -56,6 +50,6 @@ https://wiki.opnfv.org/display/PROJ/Stor4NFV
 
 https://wiki.opnfv.org/display/STOR
 
-For more information on the OPNFV Fraser release, please visit
+For more information on the OPNFV Gambia release, please visit
 
-http://www.opnfv.org/fraser
+http://www.opnfv.org/gambia
