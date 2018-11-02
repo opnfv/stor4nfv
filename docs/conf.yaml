@@ -1,3 +1,5 @@
 ---
 project_cfg: opnfv
 project: STOR4NFV
+version: 'Gambia'
+release: 'Gambia'
