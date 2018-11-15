@@ -1,0 +1,65 @@
+---
+project: 'Storage For NFV (Stor4NFV)'
+project_creation_date: 'September 12th 2017'
+project_category: ''
+lifecycle_state: 'Incubation
+Proposal'
+project_lead: &opnfv_stor4nfv_ptl
+    name: 'Shane Wang'
+    email: 'shane.wang@intel.com'
+    company: 'intel.com'
+    id: 'shanewang'
+    timezone: 'Unknown'
+primary_contact: *opnfv_stor4nfv_ptl
+issue_tracking:
+    type: 'jira'
+    url: 'https://jira.opnfv.org/projects/[STOR4NFV]'
+    key: '[STOR4NFV]'
+mailing_list:
+    type: 'mailman2'
+    url: 'opnfv-tech-discuss@lists.opnfv.org'
+    tag: '[stor4nfv]'
+realtime_discussion:
+    type: irc
+    server: 'freenode.net'
+    channel: '#opnfv-stor4nfv'
+meetings:
+    - type: 'gotomeeting+irc'
+      agenda:  # eg: 'https://wiki.opnfv.org/display/'
+      url:  # eg: 'https://global.gotomeeting.com/join/819733085'
+      server: 'freenode.net'
+      channel: '#opnfv-meeting'
+      repeats: 'weekly'
+      time:  # eg: '16:00 UTC'
+repositories:
+    - 'stor4nfv'
+committers:
+    - <<: *opnfv_stor4nfv_ptl
+    - name: 'Tushar Gohad'
+      email: 'tushar.gohad@intel.com'
+      company: 'intel.com'
+      id: 'tsg'
+    - name: 'Haomai Wang'
+      email: 'haomai@xsky.com'
+      company: 'xsky.com'
+      id: 'yuyuyu101'
+    - name: 'Hui Wang'
+      email: 'wanghui71@huawei.com'
+      company: 'huawei.com'
+      id: 'leonwang'
+    - name: 'luwei he'
+      email: 'heluwei@huawei.com'
+      company: 'huawei.com'
+      id: 'helloway'
+    - name: 'Lisa Li'
+      email: 'xiaoyan.li@intel.com'
+      company: 'intel.com'
+      id: 'lixiaoy1'
+    - name: 'Qiaowei Ren'
+      email: 'qiaowei.ren@intel.com'
+      company: 'intel.com'
+      id: 'qiaoweir'
+tsc:
+    # yamllint disable rule:line-length
+    approval: 'http//meetbot.opnfv.org/meetings/opnfv-meeting/2017/opnfv-meeting.2017-08-29-12.58.html'
+    # yamllint enable rule:line-length
