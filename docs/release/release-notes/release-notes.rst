@@ -21,17 +21,29 @@ Release Data
 | **Project**                          | Stor4NFV                             |
 |                                      |                                      |
 +--------------------------------------+--------------------------------------+
-| **Repo/commit-ID**                   |                                      |
+| **Repo/commit-ID**                   | opnfv-7.1                            |
 |                                      |                                      |
 +--------------------------------------+--------------------------------------+
-| **Release designation**              |                              |
+| **Release designation**              | Gambia 7.1                           |
 |                                      |                                      |
 +--------------------------------------+--------------------------------------+
-| **Release date**                     |                        |
+| **Release date**                     | Dec 18, 2018                         |
 |                                      |                                      |
 +--------------------------------------+--------------------------------------+
-| **Purpose of the delivery**          |                |
+| **Purpose of the delivery**          | OPNFV Gambia 7.1 release             |
 |                                      |                                      |
 +--------------------------------------+--------------------------------------+
+
+Version change
+--------------
+
+Compared to the Fraser release, the integration with OpenStack is added.
+
+Documentation deliverables
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Release notes (this document)
+- Overview
+- Test scenario description
 
 
