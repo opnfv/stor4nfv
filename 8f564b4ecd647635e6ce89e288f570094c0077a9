@@ -1,0 +1,7 @@
+Code-Review+2: Qiaowei Ren <qiaowei.ren@intel.com>
+Verified+1: jenkins-ci <jenkins-opnfv-ci@opnfv.org>
+Submitted-by: Qiaowei Ren <qiaowei.ren@intel.com>
+Submitted-at: Wed, 19 Dec 2018 00:51:23 +0000
+Reviewed-on: https://gerrit.opnfv.org/gerrit/65963
+Project: stor4nfv
+Branch: refs/heads/stable/gambia
