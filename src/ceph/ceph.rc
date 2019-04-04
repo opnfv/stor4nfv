@@ -1,6 +1,6 @@
 PROJECT="ceph"
 SUMMARY="a scalable distributed storage system"
-BRANCH="mimic"
+BRANCH="nautilus"
 REPO="https://github.com/ceph/ceph.git"
 OPTION=""
 
@@ -11,14 +11,4 @@ OPTION=""
 #          "0001-add-QAT-support.patch" \
 #         )
 SOURCES=(
-         "0001-librbd-shared-persistent-read-only-rbd-cache.patch" \
-         "0002-librbd-cleanup-rbd-shared-RO-cache.patch" \
-         "0003-librbd-fix-bufferlist-point.patch" \
-         "0004-librbd-fix-lookup-object-return.patch" \
-         "0005-librbd-fix-conf-get_val.patch" \
-         "0006-librbd-LRU-policy-based-eviction.patch" \
-         "0007-librbd-cleanup-policy-based-promotion-eviction.patch" \
-         "0008-librbd-implement-async-cache-lookup-and-read.patch" \
-         "0009-librbd-clean-up-on-rbd-shared-cache.patch" \
-         "0010-librbd-new-namespace-ceph-immutable-obj-cache.patch" \
 )
