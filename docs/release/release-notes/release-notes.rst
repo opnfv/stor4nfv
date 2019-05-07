@@ -21,23 +21,25 @@ Release Data
 | **Project**                          | Stor4NFV                             |
 |                                      |                                      |
 +--------------------------------------+--------------------------------------+
-| **Repo/commit-ID**                   | opnfv-7.1                            |
+| **Repo/commit-ID**                   |                                      |
 |                                      |                                      |
 +--------------------------------------+--------------------------------------+
-| **Release designation**              | Gambia 7.1                           |
+| **Release designation**              | Hunter                               |
 |                                      |                                      |
 +--------------------------------------+--------------------------------------+
-| **Release date**                     | Dec 18, 2018                         |
+| **Release date**                     | 2019-05-10                           |
 |                                      |                                      |
 +--------------------------------------+--------------------------------------+
-| **Purpose of the delivery**          | OPNFV Gambia 7.1 release             |
+| **Purpose of the delivery**          | OPNFV Hunter release                 |
 |                                      |                                      |
 +--------------------------------------+--------------------------------------+
 
 Version change
 --------------
 
-Compared to the Fraser release, the integration with OpenStack is added.
+Compared to the Gambia release, the integration with SPDK is added. And client
+cache support was upstreamed into Ceph, and so local client cache patches for Ceph
+was removed.
 
 Documentation deliverables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
